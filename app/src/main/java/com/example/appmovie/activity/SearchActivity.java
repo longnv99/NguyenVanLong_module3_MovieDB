@@ -114,7 +114,6 @@ class SearchActivity extends AppCompatActivity implements MovieListener {
             }
         });
     }
-
     private void loadDataSearch(String api_key, String keyword, int page){
         loading();
         viewModel.getResultSearch(api_key, keyword, page).observe(this, new Observer<ResultSearch>() {
