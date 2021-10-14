@@ -46,13 +46,21 @@ class SearchActivity extends AppCompatActivity implements MovieListener {
     private List<Result> listResultSearch = new ArrayList<>();
     private int currentPage = 1;
     private Timer timer;
+
     @Override
     protected
     void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         //setContentView(R.layout.activity_search);
-        binding = DataBindingUtil.setContentView(this,R.layout.activity_search);
+        binding = DataBindingUtil.setContentView(this, R.layout.activity_search);
         doInit();
+    }
+
+    @Override
+    protected
+    void onDestroy() {
+        super.onDestroy();
+        binding = null;
     }
 
     private
@@ -62,13 +70,7 @@ class SearchActivity extends AppCompatActivity implements MovieListener {
         adapter = new MovieAdapter(list, this);
         searchAdapter = new SearchAdapter(listResultSearch, this);
         binding.recycleview.setAdapter(adapter);
-        binding.back.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public
-            void onClick(View v) {
-                onBackPressed();
-            }
-        });
+        binding.back.setOnClickListener(v -> onBackPressed());
         binding.edsearch.addTextChangedListener(new TextWatcher() {
             @Override
             public
@@ -80,7 +82,7 @@ class SearchActivity extends AppCompatActivity implements MovieListener {
             public
             void onTextChanged(CharSequence s, int start, int before, int count) {
                 Log.d("runHandler", "change");
-                if(timer != null)
+                if (timer != null)
                     timer.cancel();
             }
 
@@ -88,70 +90,60 @@ class SearchActivity extends AppCompatActivity implements MovieListener {
             public
             void afterTextChanged(Editable s) {
                 Log.d("runHandler", "change");
-                if( ! s.toString().trim().isEmpty()){
+                if (!s.toString().trim().isEmpty()) {
                     timer = new Timer();
                     timer.schedule(new TimerTask() {
                         @Override
                         public
                         void run() {
-                            new Handler(Looper.getMainLooper()).post(new Runnable() {
-                                @Override
-                                public
-                                void run() {
-                                    listResultSearch.clear();
-                                    Log.d("runHandler", "r");
-                                    loadDataSearch(Utility.API_KEY, s.toString(), currentPage);
-                                    binding.edsearch.clearFocus();
-                                }
+                            new Handler(Looper.getMainLooper()).post(() -> {
+                                listResultSearch.clear();
+                                Log.d("runHandler", "r");
+                                loadDataSearch(Utility.API_KEY, s.toString(), currentPage);
+                                binding.edsearch.clearFocus();
                             });
                         }
-                    },800);
-                }
-                else {
+                    }, 1000);
+                } else {
                     listResultSearch.clear();
                     searchAdapter.notifyDataSetChanged();
                 }
             }
         });
     }
-    private void loadDataSearch(String api_key, String keyword, int page){
+
+    private
+    void loadDataSearch(String api_key, String keyword, int page) {
         loading();
-        viewModel.getResultSearch(api_key, keyword, page).observe(this, new Observer<ResultSearch>() {
-            @Override
-            public
-            void onChanged(ResultSearch resultSearch) {
-                loading();
-                if(resultSearch.getResults() != null){
-                    Log.d("ss", "ss");
-                    binding.recycleview.setVisibility(View.VISIBLE);
-                    listResultSearch.addAll(resultSearch.getResults());
-                    binding.recycleview.setAdapter(searchAdapter);
-                    searchAdapter.notifyDataSetChanged();
-                }
+        viewModel.getResultSearch(api_key, keyword, page).observe(this, resultSearch -> {
+            loading();
+            if (resultSearch.getResults() != null) {
+                Log.d("ss", "ss");
+                binding.recycleview.setVisibility(View.VISIBLE);
+                listResultSearch.addAll(resultSearch.getResults());
+                binding.recycleview.setAdapter(searchAdapter);
+                searchAdapter.notifyDataSetChanged();
             }
         });
 
     }
 
-    private void loading(){
-        if(currentPage == 1){
-            if(binding.getIsLoading() != null && binding.getIsLoading()){
+    private
+    void loading() {
+        if (currentPage == 1) {
+            if (binding.getIsLoading() != null && binding.getIsLoading()) {
                 binding.setIsLoading(false);
-            }
-            else {
+            } else {
                 binding.setIsLoading(true);
             }
-        }
-        else {
-            if(binding.getIsLoadingMore() != null && binding.getIsLoadingMore()){
+        } else {
+            if (binding.getIsLoadingMore() != null && binding.getIsLoadingMore()) {
                 binding.setIsLoadingMore(false);
-            }
-            else {
+            } else {
                 binding.setIsLoadingMore(true);
             }
         }
     }
-
 
     @Override
     public
@@ -165,17 +157,13 @@ class SearchActivity extends AppCompatActivity implements MovieListener {
     public
     void onResultSearchClick(Result result) {
         loading();
-        viewModel.getMovieResultSearch(Utility.API_KEY, result.getName()).observe(this, new Observer<MovieResultSearchResponse>() {
-            @Override
-            public
-            void onChanged(MovieResultSearchResponse movieResultSearchResponse) {
-                loading();
-                list.clear();
-                int oldSize = list.size();
-                list.addAll(movieResultSearchResponse.getResults());
-                binding.recycleview.setAdapter(adapter);
-                adapter.notifyItemRangeInserted(oldSize, list.size());
-            }
+        viewModel.getMovieResultSearch(Utility.API_KEY, result.getName()).observe(this, movieResultSearchResponse -> {
+            loading();
+            list.clear();
+            int oldSize = list.size();
+            list.addAll(movieResultSearchResponse.getResults());
+            binding.recycleview.setAdapter(adapter);
+            adapter.notifyItemRangeInserted(oldSize, list.size());
         });
     }
 }

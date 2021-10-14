@@ -37,26 +37,28 @@ class PopularFragment extends Fragment implements MovieListener {
     MovieAdapter adapter;
     private
     FragmentPopularBinding binding;
-    private
+    private final
     List<Movie> list = new ArrayList<>();
     private int currentPage = 1;
     private int totalPage = 1;
+
     @Override
     public
     View onCreateView(LayoutInflater inflater, ViewGroup container,
                       Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         //-return inflater.inflate(R.layout.fragment_popular, container, false);
-        binding = DataBindingUtil.inflate(inflater,R.layout.fragment_popular, container, false);
+        binding = DataBindingUtil.inflate(inflater, R.layout.fragment_popular, container, false);
         binding.setLifecycleOwner(this);
+        init();
         return binding.getRoot();
     }
 
     @Override
     public
-    void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
-        init();
+    void onDestroyView() {
+        super.onDestroyView();
+        binding = null;
     }
 
     private
@@ -70,9 +72,9 @@ class PopularFragment extends Fragment implements MovieListener {
             public
             void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
                 super.onScrolled(recyclerView, dx, dy);
-                if(binding.RecyclerView.canScrollVertically(1)){
-                    if (currentPage <= totalPage){
-                        currentPage +=1;
+                if (binding.RecyclerView.canScrollVertically(1)) {
+                    if (currentPage <= totalPage) {
+                        currentPage += 1;
                         getPopularMovie();
                     }
                 }
@@ -90,41 +92,27 @@ class PopularFragment extends Fragment implements MovieListener {
     private
     void getPopularMovie() {
         loading();
-        viewModel.getDataMovie(Utility.API_KEY, Utility.LANGUAGE, currentPage).observe(getViewLifecycleOwner(), new Observer<Object>() {
-            @Override
-            public
-            void onChanged(Object o) {
-                if (o instanceof PopularResponse){
-                    loading();
-                    if((PopularResponse) o != null){
-                        totalPage = ((PopularResponse) o).getTotal_pages();
-                        if(((PopularResponse) o).getResults() != null){
-                            int oldSize = list.size();
-                            list.addAll(((PopularResponse) o).getResults());
-                            adapter.notifyItemRangeInserted(oldSize, list.size());
-                        }
+        viewModel.getDataMovie(Utility.API_KEY, Utility.LANGUAGE, currentPage).observe(getViewLifecycleOwner(), o -> {
+            if (o instanceof PopularResponse) {
+                loading();
+                if (o != null) {
+                    totalPage = ((PopularResponse) o).getTotal_pages();
+                    if (((PopularResponse) o).getResults() != null) {
+                        int oldSize = list.size();
+                        list.addAll(((PopularResponse) o).getResults());
+                        adapter.notifyItemRangeInserted(oldSize, list.size());
                     }
                 }
             }
         });
     }
 
-    private void loading(){
-        if(currentPage == 1){
-            if(binding.getIsLoading() != null && binding.getIsLoading()){
-                binding.setIsLoading(false);
-            }
-            else {
-                binding.setIsLoading(true);
-            }
-        }
-        else {
-            if(binding.getIsLoadingMore() != null && binding.getIsLoadingMore()){
-                binding.setIsLoadingMore(false);
-            }
-            else {
-                binding.setIsLoadingMore(true);
-            }
+    private
+    void loading() {
+        if (currentPage == 1) {
+            binding.setIsLoading(binding.getIsLoading() == null || !binding.getIsLoading());
+        } else {
+            binding.setIsLoadingMore(binding.getIsLoadingMore() == null || !binding.getIsLoadingMore());
         }
     }
 
@@ -139,6 +127,5 @@ class PopularFragment extends Fragment implements MovieListener {
     @Override
     public
     void onResultSearchClick(Result result) {
-
     }
 }

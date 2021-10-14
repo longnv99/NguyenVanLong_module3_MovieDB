@@ -37,7 +37,7 @@ class NowPlayingFragment extends Fragment implements MovieListener {
     MovieAdapter adapter;
     private
     FragmentNowPlayingBinding binding;
-    private
+    private final
     List<Movie> list = new ArrayList<>();
     private int currentPage = 1;
     private int totalPage = 1;
@@ -49,14 +49,15 @@ class NowPlayingFragment extends Fragment implements MovieListener {
         //return inflater.inflate(R.layout.fragment_now_playing, container, false);
         binding = DataBindingUtil.inflate(inflater,R.layout.fragment_now_playing, container, false);
         binding.setLifecycleOwner(this);
+        init();
         return binding.getRoot();
     }
 
     @Override
     public
-    void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
-        init();
+    void onDestroyView() {
+        super.onDestroyView();
+        binding = null;
     }
 
     private
@@ -90,19 +91,15 @@ class NowPlayingFragment extends Fragment implements MovieListener {
     private
     void getNowPlayingMovie() {
         loading();
-        viewModel.getDataMovie(Utility.API_KEY, Utility.LANGUAGE, currentPage).observe(getViewLifecycleOwner(), new Observer<Object>() {
-            @Override
-            public
-            void onChanged(Object o) {
-                if (o instanceof NowPlayingResponse){
-                    loading();
-                    if((NowPlayingResponse) o != null){
-                        totalPage = ((NowPlayingResponse) o).getTotal_pages();
-                        if(((NowPlayingResponse) o).getResults() != null){
-                            int oldSize = list.size();
-                            list.addAll(((NowPlayingResponse) o).getResults());
-                            adapter.notifyItemRangeInserted(oldSize, list.size());
-                        }
+        viewModel.getDataMovie(Utility.API_KEY, Utility.LANGUAGE, currentPage).observe(getViewLifecycleOwner(), o -> {
+            if (o instanceof NowPlayingResponse){
+                loading();
+                if(o != null){
+                    totalPage = ((NowPlayingResponse) o).getTotal_pages();
+                    if(((NowPlayingResponse) o).getResults() != null){
+                        int oldSize = list.size();
+                        list.addAll(((NowPlayingResponse) o).getResults());
+                        adapter.notifyItemRangeInserted(oldSize, list.size());
                     }
                 }
             }
@@ -111,20 +108,10 @@ class NowPlayingFragment extends Fragment implements MovieListener {
 
     private void loading(){
         if(currentPage == 1){
-            if(binding.getIsLoading() != null && binding.getIsLoading()){
-                binding.setIsLoading(false);
-            }
-            else {
-                binding.setIsLoading(true);
-            }
+            binding.setIsLoading(binding.getIsLoading() == null || !binding.getIsLoading());
         }
         else {
-            if(binding.getIsLoadingMore() != null && binding.getIsLoadingMore()){
-                binding.setIsLoadingMore(false);
-            }
-            else {
-                binding.setIsLoadingMore(true);
-            }
+            binding.setIsLoadingMore(binding.getIsLoadingMore() == null || !binding.getIsLoadingMore());
         }
     }
 

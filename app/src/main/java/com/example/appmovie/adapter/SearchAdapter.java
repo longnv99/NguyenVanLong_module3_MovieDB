@@ -62,13 +62,7 @@ class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.SearchViewHolder>
         public void setBinding(Result result){
             itemSearchResultBinding.setResult(result);
             itemSearchResultBinding.executePendingBindings();
-            itemSearchResultBinding.getRoot().setOnClickListener(new View.OnClickListener() {
-                @Override
-                public
-                void onClick(View v) {
-                    movieListener.onResultSearchClick(result);
-                }
-            });
+            itemSearchResultBinding.getRoot().setOnClickListener(v -> movieListener.onResultSearchClick(result));
         }
     }
 }

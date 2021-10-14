@@ -62,13 +62,7 @@ class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieHolder> {
         public void setBinding(Movie movie){
             itemMovieBinding.setMovie(movie);
             itemMovieBinding.executePendingBindings();
-            itemMovieBinding.getRoot().setOnClickListener(new View.OnClickListener() {
-                @Override
-                public
-                void onClick(View v) {
-                    movieListener.onMovieClick(movie);
-                }
-            });
+            itemMovieBinding.getRoot().setOnClickListener(v -> movieListener.onMovieClick(movie));
         }
     }
 }

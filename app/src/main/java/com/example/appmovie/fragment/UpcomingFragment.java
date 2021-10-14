@@ -58,41 +58,20 @@ class UpcomingFragment extends Fragment implements MovieListener {
                 container,
                 false);
         binding.setLifecycleOwner(this);
+        init();
         return binding.getRoot();
 
     }
 
     @Override
     public
-    void onCreate(@Nullable Bundle savedInstanceState) {
-        setHasOptionsMenu(true);
-        super.onCreate(savedInstanceState);
-        if (savedInstanceState == null){
-            UpcomingFragment fragment = new UpcomingFragment();
-        }
-        //init();
+    void onDestroyView() {
+        super.onDestroyView();
+        binding = null;
     }
-
-    @Override
-    public
-    void onDestroy() {
-        super.onDestroy();
-        binding.upcomingRecyclerView.setVisibility(View.INVISIBLE);
-
-    }
-
-    @Override
-    public
-    void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
-        init();
-    }
-
 
     private
     void init() {
-//        binding.swipeRefresh.setOnRefreshListener(this);
-//        binding.swipeRefresh.setColorSchemeResources(R.color.black);
         binding.upcomingRecyclerView.setHasFixedSize(true);
         viewModel = new ViewModelProvider(requireActivity()).get(MovieViewModel.class);
         adapter = new MovieAdapter(list, this);
@@ -103,11 +82,9 @@ class UpcomingFragment extends Fragment implements MovieListener {
             public
             void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
                 super.onScrolled(recyclerView, dx, dy);
-//                int topRowVeticalPosition = (recyclerView == null || recyclerView.getChildCount() == 0) ? 0 : recyclerView.getChildAt(0).getTop();
-//                binding.swipeRefresh.setEnabled(topRowVeticalPosition >= 0);
-                if(binding.upcomingRecyclerView.canScrollVertically(1)){
-                    if (currentPage <= totalPage){
-                        currentPage +=1;
+                if (binding.upcomingRecyclerView.canScrollVertically(1)) {
+                    if (currentPage <= totalPage) {
+                        currentPage += 1;
                         getUpcomingMovie();
                     }
                 }
@@ -116,42 +93,38 @@ class UpcomingFragment extends Fragment implements MovieListener {
         getUpcomingMovie();
     }
 
-
     //loadData Movie in Upcoming
-    private void getUpcomingMovie(){
+    private
+    void getUpcomingMovie() {
         loading();
-                viewModel.getDataMovie(Utility.API_KEY, Utility.LANGUAGE, currentPage).observe(getViewLifecycleOwner(), o -> {
-                    if (o instanceof MovieResponse) {
-                        loading();
-                        if (((MovieResponse) o).getResults() != null) {
-                            totalPage = ((MovieResponse) o).getTotal_pages();
-                            if (((MovieResponse) o).getResults() != null) {
-                                int oldSize = list.size();
-                                list.addAll(((MovieResponse) o).getResults());
-                                adapter.notifyItemRangeInserted(oldSize, list.size());
-                            }
-                        }
+        viewModel.getDataMovie(Utility.API_KEY, Utility.LANGUAGE, currentPage).observe(getViewLifecycleOwner(), o -> {
+            if (o instanceof MovieResponse) {
+                loading();
+                if (((MovieResponse) o).getResults() != null) {
+                    totalPage = ((MovieResponse) o).getTotal_pages();
+                    if (((MovieResponse) o).getResults() != null) {
+                        int oldSize = list.size();
+                        list.addAll(((MovieResponse) o).getResults());
+                        adapter.notifyItemRangeInserted(oldSize, list.size());
                     }
-                });
-
-
+                }
+            }
+        });
     }
 
     //load more progressbar
-    private void loading(){
-        if(currentPage == 1){
-            if(binding.getIsLoading() != null && binding.getIsLoading()){
+    private
+    void loading() {
+        if (currentPage == 1) {
+            if (binding.getIsLoading() != null && binding.getIsLoading()) {
                 binding.setIsLoading(false);
-            }
-            else {
+            } else {
                 binding.setIsLoading(true);
             }
-        }
-        else {
-            if(binding.getIsLoadingMore() != null && binding.getIsLoadingMore()){
+        } else {
+            if (binding.getIsLoadingMore() != null && binding.getIsLoadingMore()) {
                 binding.setIsLoadingMore(false);
-            }
-            else {
+            } else {
                 binding.setIsLoadingMore(true);
             }
         }
@@ -169,6 +142,4 @@ class UpcomingFragment extends Fragment implements MovieListener {
     public
     void onResultSearchClick(Result result) {
     }
-
-
 }

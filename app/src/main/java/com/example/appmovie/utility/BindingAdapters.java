@@ -16,10 +16,11 @@ import org.jetbrains.annotations.NotNull;
 public
 class BindingAdapters {
     @BindingAdapter("android:imageURL")
-    public static void setImageURL(ImageView imageView, String URL){
+    public static
+    void setImageURL(ImageView imageView, String URL) {
         try {
             imageView.setAlpha(0f);
-            Picasso.get().load("https://image.tmdb.org/t/p/w500"+URL).noFade().into(imageView, new Callback() {
+            Picasso.get().load("https://image.tmdb.org/t/p/w500" + URL).noFade().into(imageView, new Callback() {
                 @Override
                 public
                 void onSuccess() {
@@ -32,18 +33,20 @@ class BindingAdapters {
 
                 }
             });
-        }catch (Exception e){
+        } catch (Exception e) {
 
         }
     }
 
     @BindingAdapter("android:text")
-    public static void setFloat(TextView textView, float value){
+    public static
+    void setFloat(TextView textView, float value) {
         textView.setText(String.valueOf(value));
     }
 
     @BindingAdapter("android:textInt")
-    public static void setInt(TextView textView, int value){
+    public static
+    void setInt(TextView textView, int value) {
         textView.setText(String.valueOf(value));
     }
 

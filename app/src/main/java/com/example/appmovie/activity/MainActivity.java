@@ -26,46 +26,40 @@ class MainActivity extends AppCompatActivity {
     void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
         navigationView = findViewById(R.id.bottomnavigation);
-        viewPager2 =findViewById(R.id.viewPager);
+        viewPager2 = findViewById(R.id.viewPager);
         viewPager2.setOffscreenPageLimit(3);
 
         setupViewPager();
-        navigationView.setOnItemSelectedListener(new NavigationBarView.OnItemSelectedListener() {
-            @Override
-            public
-            boolean onNavigationItemSelected(@NonNull MenuItem item) {
-                switch (item.getItemId()){
-                    case R.id.upcoming:
-                        viewPager2.setCurrentItem(0);
-                        break;
-                    case R.id.toprate:
-                        viewPager2.setCurrentItem(1);
-                        break;
-                    case R.id.popular:
-                        viewPager2.setCurrentItem(2);
-                        break;
-                    case R.id.nowplaying:
-                        viewPager2.setCurrentItem(3);
-                        break;
-                }
-                return true;
+        navigationView.setOnItemSelectedListener(item -> {
+            switch (item.getItemId()) {
+                case R.id.upcoming:
+                    viewPager2.setCurrentItem(0);
+                    break;
+                case R.id.toprate:
+                    viewPager2.setCurrentItem(1);
+                    break;
+                case R.id.popular:
+                    viewPager2.setCurrentItem(2);
+                    break;
+                case R.id.nowplaying:
+                    viewPager2.setCurrentItem(3);
+                    break;
             }
+            return true;
         });
-
     }
 
-    private void setupViewPager(){
+    private
+    void setupViewPager() {
         ViewPagerAdapter viewPagerAdapter = new ViewPagerAdapter(this);
         viewPager2.setAdapter(viewPagerAdapter);
-
         viewPager2.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
             @Override
             public
             void onPageSelected(int position) {
                 super.onPageSelected(position);
-                switch (position){
+                switch (position) {
                     case 0:
                         navigationView.getMenu().findItem(R.id.upcoming).setChecked(true);
                         break;
@@ -85,7 +79,6 @@ class MainActivity extends AppCompatActivity {
 
     public
     void clickSearch(View view) {
-        Intent i = new Intent(MainActivity.this, SearchActivity.class);
-        startActivity(i);
+        startActivity(new Intent(MainActivity.this, SearchActivity.class));
     }
 }

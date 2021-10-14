@@ -68,13 +68,7 @@ class SimilarMovieAdapter extends RecyclerView.Adapter<SimilarMovieAdapter.Simil
         public void setBinding(Movie movie){
             itemSimilarMovieBinding.setSimilar(movie);
             itemSimilarMovieBinding.executePendingBindings();
-            itemSimilarMovieBinding.getRoot().setOnClickListener(new View.OnClickListener() {
-                @Override
-                public
-                void onClick(View v) {
-                    movieListener.onMovieClick(movie);
-                }
-            });
+            itemSimilarMovieBinding.getRoot().setOnClickListener(v -> movieListener.onMovieClick(movie));
         }
     }
 }

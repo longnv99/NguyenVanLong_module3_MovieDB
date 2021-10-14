@@ -23,65 +23,9 @@ class DetailMovieRepository {
     DetailMovieRepository() {
     }
 
-    //single call
-//    public
-//    LiveData<DetailResponse> getDetailMovie(int movie_id, String api_key, String language){
-//        MutableLiveData<DetailResponse> data = new MutableLiveData<>();
-//        APIService.apiService.getDetailMovie(movie_id, api_key, language).enqueue(new Callback<DetailResponse>() {
-//            @Override
-//            public
-//            void onResponse(Call<DetailResponse> call, Response<DetailResponse> response) {
-//                data.setValue(response.body());
-//            }
-//
-//            @Override
-//            public
-//            void onFailure(Call<DetailResponse> call, Throwable t) {
-//                data.setValue(null);
-//            }
-//        });
-//        return data;
-//    }
-//
-//    public
-//    LiveData<TrailerResponse> getTrailerMovie(int movie_id, String api_key, String language){
-//        MutableLiveData<TrailerResponse> data = new MutableLiveData<>();
-//        APIService.apiService.getTrailerMovie(movie_id, api_key, language).enqueue(new Callback<TrailerResponse>() {
-//            @Override
-//            public
-//            void onResponse(Call<TrailerResponse> call, Response<TrailerResponse> response) {
-//                data.setValue(response.body());
-//            }
-//
-//            @Override
-//            public
-//            void onFailure(Call<TrailerResponse> call, Throwable t) {
-//                data.setValue(null);
-//            }
-//        });
-//        return data;
-//    }
-//
-//    public LiveData<SimilarMovieResponse> getSimilarMovie(int movie_id, String api_key, String language, int page){
-//        MutableLiveData<SimilarMovieResponse> data = new MutableLiveData<>();
-//        APIService.apiService.getSimilarMovie(movie_id, api_key, language, page).enqueue(new Callback<SimilarMovieResponse>() {
-//            @Override
-//            public
-//            void onResponse(Call<SimilarMovieResponse> call, Response<SimilarMovieResponse> response) {
-//                data.setValue(response.body());
-//            }
-//
-//            @Override
-//            public
-//            void onFailure(Call<SimilarMovieResponse> call, Throwable t) {
-//                data.setValue(null);
-//            }
-//        });
-//        return data;
-//    }
-
     //mutiple using merge
-    public LiveData<Object> getDetailResponse2(int movie_id, String api_key, String language, int page) {
+    public
+    LiveData<Object> getDetailResponse2(int movie_id, String api_key, String language, int page) {
         MutableLiveData<Object> data = new MutableLiveData<>();
         Observable<DetailResponse> detailObservable = APIService.apiService.getDetailMovie2(movie_id, api_key, language);
         Observable<TrailerResponse> trailerObservable = APIService.apiService.getTrailerMovie2(movie_id, api_key, language);
@@ -89,13 +33,7 @@ class DetailMovieRepository {
 
         Observable.merge(detailObservable, trailerObservable, similarObservable)
                 .subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Consumer<Object>() {
-                    @Override
-                    public
-                    void accept(Object o) throws Throwable {
-                        data.setValue(o);
-                    }
-                });
+                .subscribe(o -> data.setValue(o));
         return data;
     }
 }

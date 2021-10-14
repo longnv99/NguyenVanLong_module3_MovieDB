@@ -36,7 +36,8 @@ class MovieRepository {
 
     //observable
     //upcoming + toprate + popular + nowplaying
-    public LiveData<Object> getDataMovie(String api_key,String language, int page){
+    public
+    LiveData<Object> getDataMovie(String api_key, String language, int page) {
         MutableLiveData<Object> data = new MutableLiveData<>();
         Observable<MovieResponse> upcoming = APIService.apiService.getMovie2(api_key, language, page);
         Observable<TopRateResponse> topRate = APIService.apiService.getTopRate(api_key, language, page);
@@ -55,7 +56,9 @@ class MovieRepository {
                 });
         return data;
     }
-    public LiveData<ResultSearch> getResultSearch(String api_key,String query, int page){
+
+    public
+    LiveData<ResultSearch> getResultSearch(String api_key, String query, int page) {
         MutableLiveData<ResultSearch> data = new MutableLiveData<>();
         APIService.apiService.getResultSearch(api_key, query, page)
                 .enqueue(new Callback<ResultSearch>() {
@@ -74,7 +77,8 @@ class MovieRepository {
         return data;
     }
 
-    public LiveData<MovieResultSearchResponse> getMovieResultSearch(String api_key, String query){
+    public
+    LiveData<MovieResultSearchResponse> getMovieResultSearch(String api_key, String query) {
         MutableLiveData<MovieResultSearchResponse> data = new MutableLiveData<>();
         APIService.apiService.getMovieResultSearch(api_key, query)
                 .enqueue(new Callback<MovieResultSearchResponse>() {

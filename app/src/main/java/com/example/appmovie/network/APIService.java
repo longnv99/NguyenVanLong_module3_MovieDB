@@ -34,7 +34,7 @@ interface APIService {
             .create(APIService.class);
 
     //observable
-    @GET ("3/movie/upcoming")
+    @GET("3/movie/upcoming")
     Observable<MovieResponse> getMovie2(
             @Query("api_key") String api_key,
             @Query("language") String language,
@@ -47,7 +47,7 @@ interface APIService {
             @Query("page") int page
     );
 
-    @GET ("3/movie/popular")
+    @GET("3/movie/popular")
     Observable<PopularResponse> getPopular(
             @Query("api_key") String api_key,
             @Query("language") String language,
