@@ -1,5 +1,6 @@
 package com.example.appmovie.network;
 
+import com.example.appmovie.model.searchmodel.Result;
 import com.example.appmovie.model.searchmodel.ResultSearch;
 import com.example.appmovie.responses.DetailResponse;
 import com.example.appmovie.responses.MovieResponse;
@@ -9,6 +10,8 @@ import com.example.appmovie.responses.PopularResponse;
 import com.example.appmovie.responses.SimilarMovieResponse;
 import com.example.appmovie.responses.TopRateResponse;
 import com.example.appmovie.responses.TrailerResponse;
+
+import java.util.List;
 
 import io.reactivex.rxjava3.core.Observable;
 import retrofit2.Call;

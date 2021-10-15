@@ -2,7 +2,6 @@ package com.example.appmovie.activity;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.databinding.DataBindingUtil;
-import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 
 import android.content.Intent;
@@ -13,6 +12,7 @@ import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
+import android.widget.EditText;
 
 import com.example.appmovie.R;
 import com.example.appmovie.actions.MovieListener;
@@ -22,20 +22,34 @@ import com.example.appmovie.databinding.ActivitySearchBinding;
 import com.example.appmovie.model.Movie;
 import com.example.appmovie.model.searchmodel.Result;
 import com.example.appmovie.model.searchmodel.ResultSearch;
-import com.example.appmovie.responses.MovieResultSearchResponse;
+import com.example.appmovie.network.APIService;
 import com.example.appmovie.utility.Utility;
 import com.example.appmovie.viewmodel.MovieViewModel;
+import com.example.appmovie.viewmodel.SearchViewModel;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.TimeUnit;
+
+import io.reactivex.annotations.NonNull;
+import io.reactivex.observers.DisposableObserver;
+import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
+import io.reactivex.rxjava3.core.Observable;
+import io.reactivex.rxjava3.core.ObservableSource;
+import io.reactivex.rxjava3.disposables.CompositeDisposable;
+import io.reactivex.rxjava3.functions.Consumer;
+import io.reactivex.rxjava3.functions.Function;
+import io.reactivex.rxjava3.functions.Predicate;
+import io.reactivex.rxjava3.schedulers.Schedulers;
+import io.reactivex.rxjava3.subjects.PublishSubject;
 
 public
 class SearchActivity extends AppCompatActivity implements MovieListener {
 
     private
-    MovieViewModel viewModel;
+    SearchViewModel viewModel;
     private ActivitySearchBinding binding;
     private
     MovieAdapter adapter;
@@ -45,7 +59,8 @@ class SearchActivity extends AppCompatActivity implements MovieListener {
     List<Movie> list = new ArrayList<>();
     private List<Result> listResultSearch = new ArrayList<>();
     private int currentPage = 1;
-    private Timer timer;
+    private
+    CompositeDisposable disposable = new CompositeDisposable();
 
     @Override
     protected
@@ -54,6 +69,7 @@ class SearchActivity extends AppCompatActivity implements MovieListener {
         //setContentView(R.layout.activity_search);
         binding = DataBindingUtil.setContentView(this, R.layout.activity_search);
         doInit();
+        searchNameByQuery();
     }
 
     @Override
@@ -61,65 +77,29 @@ class SearchActivity extends AppCompatActivity implements MovieListener {
     void onDestroy() {
         super.onDestroy();
         binding = null;
+        //dispose
+        disposable.dispose();
     }
 
     private
     void doInit() {
-        viewModel = new ViewModelProvider(this).get(MovieViewModel.class);
+        viewModel = new ViewModelProvider(this).get(SearchViewModel.class);
         binding.recycleview.setHasFixedSize(true);
         adapter = new MovieAdapter(list, this);
         searchAdapter = new SearchAdapter(listResultSearch, this);
         binding.recycleview.setAdapter(adapter);
         binding.back.setOnClickListener(v -> onBackPressed());
-        binding.edsearch.addTextChangedListener(new TextWatcher() {
-            @Override
-            public
-            void beforeTextChanged(CharSequence s, int start, int count, int after) {
-
-            }
-
-            @Override
-            public
-            void onTextChanged(CharSequence s, int start, int before, int count) {
-                Log.d("runHandler", "change");
-                if (timer != null)
-                    timer.cancel();
-            }
-
-            @Override
-            public
-            void afterTextChanged(Editable s) {
-                Log.d("runHandler", "change");
-                if (!s.toString().trim().isEmpty()) {
-                    timer = new Timer();
-                    timer.schedule(new TimerTask() {
-                        @Override
-                        public
-                        void run() {
-                            new Handler(Looper.getMainLooper()).post(() -> {
-                                listResultSearch.clear();
-                                Log.d("runHandler", "r");
-                                loadDataSearch(Utility.API_KEY, s.toString(), currentPage);
-                                binding.edsearch.clearFocus();
-                            });
-                        }
-                    }, 1000);
-                } else {
-                    listResultSearch.clear();
-                    searchAdapter.notifyDataSetChanged();
-                }
-            }
-        });
     }
 
     private
     void loadDataSearch(String api_key, String keyword, int page) {
-        loading();
+        viewModel.loading(currentPage, binding);
         viewModel.getResultSearch(api_key, keyword, page).observe(this, resultSearch -> {
-            loading();
+            viewModel.loading(currentPage, binding);
             if (resultSearch.getResults() != null) {
                 Log.d("ss", "ss");
                 binding.recycleview.setVisibility(View.VISIBLE);
+                listResultSearch.clear();
                 listResultSearch.addAll(resultSearch.getResults());
                 binding.recycleview.setAdapter(searchAdapter);
                 searchAdapter.notifyDataSetChanged();
@@ -129,20 +109,23 @@ class SearchActivity extends AppCompatActivity implements MovieListener {
     }
 
     private
-    void loading() {
-        if (currentPage == 1) {
-            if (binding.getIsLoading() != null && binding.getIsLoading()) {
-                binding.setIsLoading(false);
-            } else {
-                binding.setIsLoading(true);
-            }
-        } else {
-            if (binding.getIsLoadingMore() != null && binding.getIsLoadingMore()) {
-                binding.setIsLoadingMore(false);
-            } else {
-                binding.setIsLoadingMore(true);
-            }
-        }
+    void searchNameByQuery() {
+        //using CompositeDisposable managerment
+        //using Publish Subject
+        disposable.add(viewModel.getSupjectFromView(binding.edsearch)
+                .debounce(300, TimeUnit.MILLISECONDS)
+                .filter(s -> {
+                    if (s.isEmpty())
+                        return false;
+                    else
+                        return true;
+                })
+                .distinctUntilChanged()
+                .observeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(s -> {
+                    loadDataSearch(Utility.API_KEY, s, currentPage);
+                }));
     }
 
     @Override
@@ -156,9 +139,9 @@ class SearchActivity extends AppCompatActivity implements MovieListener {
     @Override
     public
     void onResultSearchClick(Result result) {
-        loading();
+        viewModel.loading(currentPage, binding);
         viewModel.getMovieResultSearch(Utility.API_KEY, result.getName()).observe(this, movieResultSearchResponse -> {
-            loading();
+            viewModel.loading(currentPage, binding);
             list.clear();
             int oldSize = list.size();
             list.addAll(movieResultSearchResponse.getResults());
