@@ -85,14 +85,13 @@ interface APIService {
 
     //get list name
     @GET("/3/search/keyword")
-    Call<ResultSearch> getResultSearch(
+    Observable<ResultSearch> getNameByQuery(
             @Query("api_key") String api_key,
-            @Query("query") String query,
-            @Query("page") int page);
+            @Query("query") String query);
 
     //get list movie
     @GET("/3/search/movie")
-    Call<MovieResultSearchResponse> getMovieResultSearch(
+    Observable<MovieResultSearchResponse> getMovieByQuery(
             @Query("api_key") String api_key,
             @Query("query") String query
     );

@@ -89,18 +89,18 @@ class TestRetrofitActivity extends AppCompatActivity {
 //
 //                    }
 //                });
-        APIService.apiService.getResultSearch("c2316184af86b621c7840f188495ac4d","crush", 1).enqueue(new Callback<ResultSearch>() {
-            @Override
-            public
-            void onResponse(Call<ResultSearch> call, Response<ResultSearch> response) {
-                Toast.makeText(TestRetrofitActivity.this, "call successfull "+response.body().getTotal_results(), Toast.LENGTH_LONG).show();
-            }
-
-            @Override
-            public
-            void onFailure(Call<ResultSearch> call, Throwable t) {
-
-            }
-        });
+//        APIService.apiService.getResultSearch("c2316184af86b621c7840f188495ac4d","crush", 1).enqueue(new Callback<ResultSearch>() {
+//            @Override
+//            public
+//            void onResponse(Call<ResultSearch> call, Response<ResultSearch> response) {
+//                Toast.makeText(TestRetrofitActivity.this, "call successfull "+response.body().getTotal_results(), Toast.LENGTH_LONG).show();
+//            }
+//
+//            @Override
+//            public
+//            void onFailure(Call<ResultSearch> call, Throwable t) {
+//
+//            }
+//        });
     }
 }

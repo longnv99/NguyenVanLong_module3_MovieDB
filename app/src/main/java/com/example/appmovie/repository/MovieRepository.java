@@ -47,53 +47,21 @@ class MovieRepository {
         Observable.merge(upcoming, topRate, popular, nowplaying)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Consumer<Object>() {
-                    @Override
-                    public
-                    void accept(Object o) throws Throwable {
-                        data.setValue(o);
-                    }
-                });
+                .subscribe(o -> data.setValue(o));
         return data;
     }
 
-    public
-    LiveData<ResultSearch> getResultSearch(String api_key, String query, int page) {
-        MutableLiveData<ResultSearch> data = new MutableLiveData<>();
-        APIService.apiService.getResultSearch(api_key, query, page)
-                .enqueue(new Callback<ResultSearch>() {
-                    @Override
-                    public
-                    void onResponse(Call<ResultSearch> call, Response<ResultSearch> response) {
-                        data.setValue(response.body());
-                    }
-
-                    @Override
-                    public
-                    void onFailure(Call<ResultSearch> call, Throwable t) {
-                        data.setValue(null);
-                    }
-                });
-        return data;
+    public Observable<ResultSearch> getNameByQuery(String api_key, String query){
+        return APIService.apiService.getNameByQuery(api_key, query);
     }
 
     public
-    LiveData<MovieResultSearchResponse> getMovieResultSearch(String api_key, String query) {
+    LiveData<MovieResultSearchResponse> getMovieByQuery(String api_key, String query) {
         MutableLiveData<MovieResultSearchResponse> data = new MutableLiveData<>();
-        APIService.apiService.getMovieResultSearch(api_key, query)
-                .enqueue(new Callback<MovieResultSearchResponse>() {
-                    @Override
-                    public
-                    void onResponse(Call<MovieResultSearchResponse> call, Response<MovieResultSearchResponse> response) {
-                        data.setValue(response.body());
-                    }
-
-                    @Override
-                    public
-                    void onFailure(Call<MovieResultSearchResponse> call, Throwable t) {
-                        data.setValue(null);
-                    }
-                });
+        APIService.apiService.getMovieByQuery(api_key, query)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(movieResultSearchResponse -> data.setValue(movieResultSearchResponse));
         return data;
     }
 }

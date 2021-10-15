@@ -9,6 +9,7 @@ import androidx.lifecycle.ViewModel;
 
 import com.example.appmovie.databinding.ActivitySearchBinding;
 import com.example.appmovie.model.searchmodel.ResultSearch;
+import com.example.appmovie.network.APIService;
 import com.example.appmovie.repository.MovieRepository;
 import com.example.appmovie.responses.MovieResultSearchResponse;
 
@@ -26,13 +27,13 @@ class SearchViewModel extends ViewModel {
     }
 
     public
-    LiveData<ResultSearch> getResultSearch(String api_key, String query, int page) {
-        return movieRepository.getResultSearch(api_key, query, page);
+    Observable<ResultSearch> getNameMovieByQuery(String api_key, String query){
+        return movieRepository.getNameByQuery(api_key, query);
     }
 
     public
-    LiveData<MovieResultSearchResponse> getMovieResultSearch(String api_key, String query) {
-        return movieRepository.getMovieResultSearch(api_key, query);
+    LiveData<MovieResultSearchResponse> getMovieByQuery(String api_key, String query) {
+        return movieRepository.getMovieByQuery(api_key, query);
     }
 
     public

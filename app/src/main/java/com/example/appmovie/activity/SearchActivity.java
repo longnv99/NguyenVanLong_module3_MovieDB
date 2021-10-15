@@ -2,6 +2,7 @@ package com.example.appmovie.activity;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.databinding.DataBindingUtil;
+import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 
 import android.content.Intent;
@@ -23,6 +24,7 @@ import com.example.appmovie.model.Movie;
 import com.example.appmovie.model.searchmodel.Result;
 import com.example.appmovie.model.searchmodel.ResultSearch;
 import com.example.appmovie.network.APIService;
+import com.example.appmovie.responses.MovieResultSearchResponse;
 import com.example.appmovie.utility.Utility;
 import com.example.appmovie.viewmodel.MovieViewModel;
 import com.example.appmovie.viewmodel.SearchViewModel;
@@ -92,23 +94,6 @@ class SearchActivity extends AppCompatActivity implements MovieListener {
     }
 
     private
-    void loadDataSearch(String api_key, String keyword, int page) {
-        viewModel.loading(currentPage, binding);
-        viewModel.getResultSearch(api_key, keyword, page).observe(this, resultSearch -> {
-            viewModel.loading(currentPage, binding);
-            if (resultSearch.getResults() != null) {
-                Log.d("ss", "ss");
-                binding.recycleview.setVisibility(View.VISIBLE);
-                listResultSearch.clear();
-                listResultSearch.addAll(resultSearch.getResults());
-                binding.recycleview.setAdapter(searchAdapter);
-                searchAdapter.notifyDataSetChanged();
-            }
-        });
-
-    }
-
-    private
     void searchNameByQuery() {
         //using CompositeDisposable managerment
         //using Publish Subject
@@ -121,10 +106,15 @@ class SearchActivity extends AppCompatActivity implements MovieListener {
                         return true;
                 })
                 .distinctUntilChanged()
-                .observeOn(Schedulers.io())
+                .switchMap((Function<String, ObservableSource<ResultSearch>>)
+                        s -> viewModel.getNameMovieByQuery(Utility.API_KEY, s))
+                .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(s -> {
-                    loadDataSearch(Utility.API_KEY, s, currentPage);
+                .subscribe(resultSearch -> {
+                    listResultSearch.clear();
+                    listResultSearch.addAll(resultSearch.getResults());
+                    binding.recycleview.setAdapter(searchAdapter);
+                    searchAdapter.notifyDataSetChanged();
                 }));
     }
 
@@ -140,7 +130,7 @@ class SearchActivity extends AppCompatActivity implements MovieListener {
     public
     void onResultSearchClick(Result result) {
         viewModel.loading(currentPage, binding);
-        viewModel.getMovieResultSearch(Utility.API_KEY, result.getName()).observe(this, movieResultSearchResponse -> {
+        viewModel.getMovieByQuery(Utility.API_KEY, result.getName()).observe(this, movieResultSearchResponse -> {
             viewModel.loading(currentPage, binding);
             list.clear();
             int oldSize = list.size();
